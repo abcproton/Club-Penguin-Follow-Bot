@@ -4,9 +4,8 @@ from urllib import urlencode
 from operator import xor
 from urllib2 import urlopen, Request
 from bs4 import BeautifulSoup
-import threading
 
-class AccountMaker(object, threading.Thread):
+class AccountMaker(object):
 
   header = {
     "User-Agent": "Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11"
@@ -89,14 +88,14 @@ class AccountMaker(object, threading.Thread):
     if setCookieResponse != None:
       print "Registration Success"
       with open("accounts.txt", "a") as file:
-          file.write(username + ":" + self.password + "\n")
+        file.write(username + ":" + self.password + "\n")
     else:
       print "Registration failed"
 
     del self.header["Cookie"], self.header["Content-Type"], \
         self.header["Origin"], self.header["Referer"]
 
-  def run(self):
+  def create(self):
     if self.amount > 1:
       for account in range(self.amount):
         if self.username == "random":
@@ -107,8 +106,6 @@ class AccountMaker(object, threading.Thread):
       self.register(self.username, self.email)
 
 try:
-  while True:
-    t = AccountMaker(username="random", password="ComplexPassword1", email="random", amount=100)
-    t.start()
+  AccountMaker(username="random", password="ComplexPassword1", email="random", amount=100)
 except KeyboardInterrupt:
   print "Stopping.." 
