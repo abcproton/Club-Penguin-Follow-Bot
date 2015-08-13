@@ -12,7 +12,7 @@ class MyPenguin(Penguin):
         def __init__(self, player, offset_x, offset_y):
                 super(MyPenguin, self).__init__(player)
                 
-                self.name = 'Billybob' #Change this to the penguin you wish to follow!
+                self.name = 'Breptnb' #Change this to the penguin you wish to follow!
                 self.mixTarget = '' 
 
                 self.offset_x = offset_x
@@ -21,6 +21,7 @@ class MyPenguin(Penguin):
                 self.addListener("sp", self.handleMove) 
                 self.addListener("se", self.handleEmote)
                 self.addListener("sm", self.handleMessage)
+                self.addListener("ss", self.handleSafeMessage)
                 self.addListener("sb", self.handleSnowball)
                 self.addListener("sf", self.handleFrame)
                 self.addListener("sa", self.handleAction)
@@ -41,6 +42,10 @@ class MyPenguin(Penguin):
         def handleMessage(self, data):
                 if data[3] == self.mixTarget:
                         self.sendPhraseMessage(data[4])
+
+        def handleSafeMessage(self, data):
+                if data[3] == self.mixTarget:
+                        self.sendSafeMessage(data[4])
 
         def handleSnowball(self, data):
                 if data[3] == self.mixTarget:
