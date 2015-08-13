@@ -191,6 +191,9 @@ class Penguin(Spheniscidae):
         def sendAction(self, id):
                 self.sendXt("s", "u#sa", id)
 
+        def sendSafeMessage(self, id):
+                self.sendXt("s", "u#ss", id)
+
 	# Doesn't (always?) work
 	def sendMessage(self, msg):
 		self.sendXt("s", "m#sm", msg)
