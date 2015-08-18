@@ -36,7 +36,7 @@ class Spheniscidae(object, LineReceiver):
 	Parses XML and world-server data and calls functions to handle the data.
 	"""
 	def lineReceived(self, data):
-		self.logger.info("Received data: " + data)
+		#self.logger.info("Received data: " + data)
 
 		if data.startswith("<"):
 			data = etree.fromstring(data)[0]
@@ -87,7 +87,7 @@ class Spheniscidae(object, LineReceiver):
 	It automatically appends the null-byte to the end of the outgoing data.
 	"""
 	def send(self, data):
-		self.logger.debug("Sending %s", data)
+		#elf.logger.debug("Sending %s", data)
 		self.sendLine(data)
 
 class Chinstrap(Spheniscidae):
@@ -142,7 +142,7 @@ class Penguin(Spheniscidae):
 		)
 
 	def _handleLogin(self, data):
-		self.logger.info("Received login")
+		self.logger.info("A bot logged on")
 
 		self.sendXt("s", "j#js", self.playerId, self.loginKey, "en")
 		self.sendXt("s", "g#gi")
@@ -193,6 +193,13 @@ class Penguin(Spheniscidae):
 
         def sendSafeMessage(self, id):
                 self.sendXt("s", "u#ss", id)
+
+        def sendJoke(self, id):
+                self.sendXt("s", "u#sj", id)
+                
+        def sendBlueprint(self):
+                self.send("%xt%s%t#rt%21%1%%")
+                self.send("%xt%s%t#at%48952%2%1%")
 
 	# Doesn't (always?) work
 	def sendMessage(self, msg):
