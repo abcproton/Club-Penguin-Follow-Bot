@@ -197,10 +197,6 @@ class Penguin(Spheniscidae):
         def sendJoke(self, id):
                 self.sendXt("s", "u#sj", id)
                 
-        def sendBlueprint(self):
-                self.send("%xt%s%t#rt%21%1%%")
-                self.send("%xt%s%t#at%48952%2%1%")
-
 	# Doesn't (always?) work
 	def sendMessage(self, msg):
 		self.sendXt("s", "m#sm", msg)
