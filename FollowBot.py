@@ -152,7 +152,7 @@ class MyPenguin(Penguin):
         
         def sendBlueprint(self):
                 self.send("%xt%s%t#rt%21%1%%")
-                self.send("%xt%s%t#at%48952%2%1%)
+                self.send("%xt%s%t#at%48952%2%1%")
                 
         def sendNewspaper(self):
                 self.send("%xt%s%t#rt%26408%1%%")
