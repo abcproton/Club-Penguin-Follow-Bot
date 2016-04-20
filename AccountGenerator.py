@@ -1,111 +1,153 @@
 from string import join
 from random import choice, randrange
 from urllib import urlencode
-from operator import xor
-from urllib2 import urlopen, Request
+from urllib2 import urlopen, Request, HTTPError
 from bs4 import BeautifulSoup
+from threading import Thread
+import requests
 
-class AccountMaker(object):
 
+class AccountGenerator(Thread):
   header = {
     "User-Agent": "Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11"
   }
 
-  def __init__(self, username, password, email, color="random", amount=1):
-    if len(username) > 12:
-      print "Username is too long!"
-    elif len(username) < 3:
-      print "Username is too short."
-    elif amount != 1 and len(username) > 9:
-      print "Username is too long!"
-    elif xor(type(amount) != int, amount < 1):
-      print "Invalid amount specified."
-    else:
-      self.username = username
-      self.password = password
-      self.email = email
-      self.color = color if color != "random" else randrange(1, 13)
-      self.amount = amount
+  def __init__(self):
+    super(AccountGenerator, self).__init__()
+      
+    self.email = "random"
+    self.name = "random"
+    self.pw = "penguin88"
+    self.color = randrange(1, 12)
 
-      self.create()
+  def run(self):
+    self.loadCaptchas()
+    self.registerPenguin()
 
-  def generateRandomString(self, length=8):
-    return join((choice("qwertyuiopasdfghjklzxcvbnm") for _ in range(length)), "")
+  def loadCaptchas(self):
+    self.captchas = {}
+    self.captchas["watermelon"] = "ARRB8J8KQ9t7AAAAAElFTkSuQmCC"
+    self.captchas["balloon"] = "wuWB85cW2c5NQAAAABJRU5ErkJggg=="
+    self.captchas["pizza"] = "XMAAAAASUVORK5CYII="
+    self.captchas["popcorn"] = "yat7sdCF61QAAAABJRU5ErkJggg=="
+    self.captchas["igloo"] = "b+T94dZQb+IAAAAASUVORK5CYII="
+    self.captchas["cheese"] = "B0eBprJbn4wXAAAAAElFTkSuQmCC"
 
-  def retrieveCookies(self):
-    initialRequest = Request("https://secured.clubpenguin.com/penguin/create", headers=self.header)
+  def registerPenguin(self):
+    self.getRegisterData()
 
-    initialResponse = urlopen(initialRequest)
+    if self.name == "random":
+      self.name = self.genRandomString(8)
 
-    cookie = initialResponse.info().getheader("Set-Cookie")
+    if self.email == "random":
+      self.email = self.genRandomString(8) + "@gmail.com"
 
-    initialMarkup = initialResponse.read()
-    initialResponse.close()
+    print "[{0}] Registering... ".format(self.name)
 
-    soup = BeautifulSoup(initialMarkup)
+    try:
+      data = {
+        "anon_token": self.anonToken,
+        "color": str(self.color),
+        "name": self.name,
+        "pass": self.pw,
+        "pass_show": "1",
+        "email": self.email,
+        "terms": "1",
+        "captcha": str(self.captchaN),
+        "op":"Create Your Penguin",
+        "form_build_id": self.formBuildId,
+        "form_id": "penguin_create_form"
+      }
+
+      request = Request("https://secured.clubpenguin.com/penguin/create", urlencode(data), self.header)
+      response = urlopen(request)
+
+      htmlData = response.read()
+      soup = BeautifulSoup(htmlData, "html.parser")
+      
+      setCookieResponse = response.info().getheader("Set-Cookie")
+      response.close()
+
+      if setCookieResponse != None:
+        print "[{0}] Registration successful".format(self.name)
+        with open("accounts.txt", "a") as file:
+          file.write("{0}:{1}\n".format(self.name, self.pw))
+
+    except HTTPError, err:
+      if err.code == 403:
+        print "[{0}] Registration successful".format(self.name)
+        with open("accounts.txt", "a") as file:
+          file.write("{0}:{1}\n".format(self.name, self.pw))
+      else:
+        raise
+
+   
+  def getRegisterData(self):
+    request = Request("https://secured.clubpenguin.com/penguin/create", headers=self.header)
+    response = urlopen(request)
+
+    cookie = response.info().getheader("Set-Cookie")
+    htmlData = response.read()
+
+    response.close()
+
+    soup = BeautifulSoup(htmlData, "html.parser")
+
+    itemName = self.findBetween(htmlData, "item_name\":\"", "\",");
+    image1 = self.findBetween(htmlData, "\"images\":{\"1\":\"", "\",");
+    image1 = image1.rsplit('/',1)[-1]
+
+    image2 = self.findBetween(htmlData, image1 + "\",\"2\":\"", "\",");
+    image2 = image2.rsplit('/',1)[-1]
+
+    image3 = self.findBetween(htmlData, image2 + "\",\"3\":\"", "\"");
+    image3 = image3.rsplit('/',1)[-1]
+
+    itemImage = self.captchas[itemName]
+    if(image1 == itemImage):
+      self.captchaN = 0
+    elif(image2 == itemImage):
+      self.captchaN = 1
+    elif(image3 == itemImage):
+      self.captchaN = 2
 
     self.anonToken = soup.find("input", {"name": "anon_token"})["value"]
     self.formBuildId = soup.find("input", {"name": "form_build_id"})["value"]
 
-    randomString = self.generateRandomString()
+    randomString = self.genRandomString()
+    
     self.header["Cookie"] = "{0} playspanTRANSID=arthur-{1}; cpBROWSERID=vortexal-{1};".format(cookie, randomString)
-    self.header["Content-Type"] = "application/x-www-form-urlencoded"
     self.header["Origin"] = "https://secured.clubpenguin.com"
     self.header["Referer"] = "https://secured.clubpenguin.com/penguin/create"
 
-  def register(self, username, email):
-    self.retrieveCookies()
+  def findBetween(self, s, first, last):
+    try:
+      start = s.index(first) + len(first)
+      end = s.index(last, start)
+      return s[start:end]
+    except ValueError:
+      return ""
 
-    if username == "random":
-      username = self.generateRandomString(randrange(5, 11))
+  def safeFind(self, str, value):
+    try:
+      jsonObj = json.loads(str)
+      return jsonObj[value]
+    except ValueError, e:
+      return False
+    return False
 
-    if email == "random":
-      randomLocal = self.generateRandomString()
-      email = "{0}@gmail.com".format(randomLocal)
+  def genRandomString(self, length=8):
+    return join((choice("qwertyuiopasdfghjklzxcvbnm") for _ in range(length)), "")
 
-    print "Registering with {0} and {1}".format(username, email)
+print """
+    =+= Account Generator =+=
+    Stores generated accounts in 'accounts.txt' file
 
-    data = {
-      "anon_token": self.anonToken,
-      "color": self.color,
-      "name": username,
-      "pass": self.password,
-      "pass_show": randrange(0, 1),
-      "email": email,
-      "email_confirm": email,
-      "terms": 1,
-      "op":"Next",
-      "form_build_id": self.formBuildId,
-      "form_id": "penguin_create_form"
-    }
+\n
+"""
 
-    finalRequest = Request("https://secured.clubpenguin.com/penguin/create", urlencode(data), self.header)
-    finalResponse = urlopen(finalRequest)
+amt = input("Enter the amount of penguins you wish to generate: ")
 
-    setCookieResponse = finalResponse.info().getheader("Set-Cookie")
-    finalResponse.close()
-
-    if setCookieResponse != None:
-      print "Registration Success"
-      with open("accounts.txt", "a") as file:
-        file.write(username + ":" + self.password + "\n")
-    else:
-      print "Registration failed"
-
-    del self.header["Cookie"], self.header["Content-Type"], \
-        self.header["Origin"], self.header["Referer"]
-
-  def create(self):
-    if self.amount > 1:
-      for account in range(self.amount):
-        if self.username == "random":
-          self.register(self.username, self.email)
-        else:
-          self.register(self.username + str(account), self.email)
-    else:
-      self.register(self.username, self.email)
-
-try:
-  AccountMaker(username="random", password="ComplexPassword1", email="random", amount=100)
-except KeyboardInterrupt:
-  print "Stopping.." 
+for i in range(int(amt)):
+    a = AccountGenerator()
+    a.start()
