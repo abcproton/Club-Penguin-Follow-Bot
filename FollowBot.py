@@ -56,7 +56,7 @@ class MyPenguin(Penguin):
                 if data[3] == self.mixTarget:
                         print self.name + ">> MOVED: " + data[4] + " " + data[5] 
                         self.sendPosition(int(data[4]) + self.offset_x, int(data[5]) + self.offset_y)
-                        
+
         def handleEmote(self, data):
                 if data[3] == self.mixTarget:
                         print self.name + ">> SENT EMOTE: " + data[4]
@@ -90,6 +90,7 @@ class MyPenguin(Penguin):
                                 self.joinRoom(self.currentRoomID)
                                 print "BOT >> RESTARTED" 
                                 self.isHoldingNewspaper = False
+
                                 
         def handleSafeMessage(self, data):
                 if data[3] == self.mixTarget:
@@ -172,7 +173,7 @@ class FollowBotFactory(PenguinFactory):
                 
                 penguin = MyPenguin(player)
                 
-                penguin.target_penguin = self.target_penguin
+                penguin.name = self.target_penguin
                 penguin.offset_x = self.offset_x
                 penguin.offset_y = self.offset_y
 
