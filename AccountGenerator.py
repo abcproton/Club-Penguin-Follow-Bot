@@ -143,7 +143,7 @@ print """
     =+= Account Generator =+=
     Stores generated accounts in 'accounts.txt' file
 
-\n
+
 """
 
 amt = input("Enter the amount of penguins you wish to generate: ")
